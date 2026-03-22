@@ -20,7 +20,7 @@ These choices were made during brainstorming and shape every aspect of the desig
 
 **Layered library + CLI frontend** — `libchess` is a static library with a clean public API. The CLI is a thin driver. This allows a REPL, MCP tool, or any other frontend to be built on top later without restructuring.
 
-**Simplicity** — code should be self-documenting. Minimal comments, only where logic isn't self-evident. Clear names, short functions, no boilerplate.
+**Simplicity** — prefer clear names and short functions over comments and boilerplate.
 
 ## Scope
 
@@ -181,7 +181,7 @@ Pseudo-legal generation + legality filter using copy-restore:
 2. For each candidate: copy the `Position` on the stack, call `make_move` on the copy, check if own king is attacked
 3. If king is safe, the move is legal. Discard the copy either way.
 
-Copy-restore is chosen over make/unmake. In search engines, make/unmake is standard because it avoids copying ~120 bytes millions of times per second — the engine makes a move, recurses, then undoes it in place using a saved undo struct. scb evaluates one position per invocation, so the copy cost is irrelevant. Copy-restore is simpler (no `unmake_move`, no undo struct, no state to restore on error) and eliminates an entire class of bugs where undo doesn't perfectly reverse the make.
+Copy-restore is chosen over make/unmake. In search engines, make/unmake is standard because it avoids copying ~120 bytes millions of times per second — the engine makes a move, recurses, then undoes it in place using a saved undo struct. scb evaluates one position per invocation, so the copy cost is irrelevant. Copy-restore is simpler (no `unmake_move`, no undo struct, no state to restore on error) and avoids bugs where undo doesn't perfectly reverse the make.
 
 Pawn generation uses bitboard shift operations with masks for promotion rank, double-push rank, and file edge clipping.
 
