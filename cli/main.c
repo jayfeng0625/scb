@@ -8,7 +8,7 @@ static void usage(void) {
     fprintf(stderr, "usage: chess <command> [options]\n\n"
                     "commands:\n"
                     "  new-game                         start a new game\n"
-                    "  validate --fen <FEN> --move <SAN> validate and apply a move\n"
+                    "  validate --fen <FEN> --move <LAN> validate and apply a move\n"
                     "  legal-moves --fen <FEN>           list legal moves\n"
                     "  render --fen <FEN>                render the board\n");
 }
@@ -44,13 +44,13 @@ static int cmd_validate(int argc, char **argv) {
     }
 
     Move move;
-    if (!parse_san(&pos, move_str, &move)) {
+    if (!parse_lan(&pos, move_str, &move)) {
         printf("error: invalid move '%s'\n", move_str);
         return EXIT_INVALID_MOVE;
     }
 
-    char san[SAN_MAX];
-    format_san(&pos, &move, san, sizeof(san));
+    char lan[LAN_MAX];
+    format_lan(&move, lan, sizeof(lan));
     make_move(&pos, &move);
 
     GameStatus status = get_status(&pos);
@@ -59,7 +59,7 @@ static int cmd_validate(int argc, char **argv) {
 
     printf("fen: %s\n", fen);
     printf("status: %s\n", status_name(status));
-    printf("move: %s\n\n", san);
+    printf("move: %s\n\n", lan);
 
     char board[RENDER_MAX];
     render_board(&pos, board, sizeof(board));
@@ -86,9 +86,9 @@ static int cmd_legal_moves(int argc, char **argv) {
 
     printf("moves:");
     for (int i = 0; i < count; i++) {
-        char san[SAN_MAX];
-        format_san(&pos, &moves[i], san, sizeof(san));
-        printf(" %s", san);
+        char lan[LAN_MAX];
+        format_lan(&moves[i], lan, sizeof(lan));
+        printf(" %s", lan);
     }
     printf("\ncount: %d\n", count);
     return EXIT_OK;

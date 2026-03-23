@@ -91,13 +91,13 @@ void test_scholars_mate(void) {
     position_init(&pos);
     Move m;
 
-    ASSERT(parse_san(&pos, "e4", &m));   ASSERT(make_move(&pos, &m));
-    ASSERT(parse_san(&pos, "e5", &m));   ASSERT(make_move(&pos, &m));
-    ASSERT(parse_san(&pos, "Bc4", &m));  ASSERT(make_move(&pos, &m));
-    ASSERT(parse_san(&pos, "Nc6", &m));  ASSERT(make_move(&pos, &m));
-    ASSERT(parse_san(&pos, "Qh5", &m));  ASSERT(make_move(&pos, &m));
-    ASSERT(parse_san(&pos, "Nf6", &m));  ASSERT(make_move(&pos, &m));
-    ASSERT(parse_san(&pos, "Qxf7", &m)); ASSERT(make_move(&pos, &m));
+    ASSERT(parse_lan(&pos, "e2e4", &m)); ASSERT(make_move(&pos, &m));
+    ASSERT(parse_lan(&pos, "e7e5", &m)); ASSERT(make_move(&pos, &m));
+    ASSERT(parse_lan(&pos, "f1c4", &m)); ASSERT(make_move(&pos, &m));
+    ASSERT(parse_lan(&pos, "b8c6", &m)); ASSERT(make_move(&pos, &m));
+    ASSERT(parse_lan(&pos, "d1h5", &m)); ASSERT(make_move(&pos, &m));
+    ASSERT(parse_lan(&pos, "g8f6", &m)); ASSERT(make_move(&pos, &m));
+    ASSERT(parse_lan(&pos, "h5f7", &m)); ASSERT(make_move(&pos, &m));
 
     ASSERT_EQ(get_status(&pos), STATUS_CHECKMATE);
 }

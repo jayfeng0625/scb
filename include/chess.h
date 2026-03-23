@@ -33,7 +33,7 @@ enum {
 };
 
 #define FEN_MAX     128
-#define SAN_MAX     12
+#define LAN_MAX     6
 #define MOVES_MAX   256
 #define RENDER_MAX  2048
 
@@ -109,8 +109,8 @@ bool is_square_attacked(const Position *pos, Square sq, int by_color);
 int  generate_legal_moves(const Position *pos, Move *moves);
 
 // notation.c
-bool parse_san(const Position *pos, const char *san, Move *out);
-int  format_san(const Position *pos, const Move *move, char *buf, int bufsize);
+bool parse_lan(const Position *pos, const char *lan, Move *out);
+int  format_lan(const Move *move, char *buf, int bufsize);
 
 // rules.c
 GameStatus get_status(const Position *pos);
