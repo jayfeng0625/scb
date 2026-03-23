@@ -88,6 +88,29 @@ void test_format_san_disambiguation(void) {
     ASSERT_STR(buf, "Nbd2");
 }
 
+void test_format_san_rank_disambiguation(void) {
+    // Two rooks on the same file (a1 and a3), both can go to a2
+    // Need rank disambiguation: R1a2 vs R3a2
+    Position pos;
+    position_from_fen(&pos, "4k3/8/8/8/8/R7/8/R3K3 w - - 0 1");
+    Move m = { .from = A1, .to = A2, .piece = ROOK, .captured = PIECE_NONE,
+               .promotion = PIECE_NONE, .castling = MOVE_CASTLE_NONE, .en_passant = false };
+    char buf[SAN_MAX];
+    format_san(&pos, &m, buf, sizeof(buf));
+    ASSERT_STR(buf, "R1a2");
+}
+
+void test_format_san_castling_check(void) {
+    // White castles kingside, rook lands on f1 which attacks black king on f8
+    Position pos;
+    position_from_fen(&pos, "5k2/8/8/8/8/8/8/4K2R w K - 0 1");
+    Move m = { .from = E1, .to = G1, .piece = KING, .captured = PIECE_NONE,
+               .promotion = PIECE_NONE, .castling = MOVE_CASTLE_KINGSIDE, .en_passant = false };
+    char buf[SAN_MAX];
+    format_san(&pos, &m, buf, sizeof(buf));
+    ASSERT_STR(buf, "O-O+");
+}
+
 void test_notation_suite(void) {
     RUN_SUITE(test_parse_san_pawn);
     RUN_SUITE(test_parse_san_knight);
@@ -98,4 +121,6 @@ void test_notation_suite(void) {
     RUN_SUITE(test_format_san);
     RUN_SUITE(test_format_san_knight);
     RUN_SUITE(test_format_san_disambiguation);
+    RUN_SUITE(test_format_san_rank_disambiguation);
+    RUN_SUITE(test_format_san_castling_check);
 }

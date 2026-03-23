@@ -100,7 +100,7 @@ typedef struct {
 
 ```c
 #define FEN_MAX      128
-#define SAN_MAX      8
+#define SAN_MAX      12
 #define MOVES_MAX    256
 #define RENDER_MAX   2048
 ```
@@ -182,6 +182,8 @@ Pseudo-legal generation + legality filter using copy-restore:
 3. If king is safe, the move is legal. Discard the copy either way.
 
 Copy-restore is chosen over make/unmake. In search engines, make/unmake is standard because it avoids copying ~120 bytes millions of times per second — the engine makes a move, recurses, then undoes it in place using a saved undo struct. scb evaluates one position per invocation, so the copy cost is irrelevant. Copy-restore is simpler (no `unmake_move`, no undo struct, no state to restore on error) and avoids bugs where undo doesn't perfectly reverse the make.
+
+Move count is threaded through generation functions via `int *n` parameter rather than file-scope static state — avoids shared state between calls.
 
 Pawn generation uses bitboard shift operations with masks for promotion rank, double-push rank, and file edge clipping.
 

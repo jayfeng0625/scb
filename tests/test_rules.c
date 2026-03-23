@@ -37,6 +37,23 @@ void test_status_draw_50_move(void) {
     ASSERT_EQ(get_status(&pos), STATUS_DRAW_50_MOVE);
 }
 
+void test_status_sufficient_opposite_bishops(void) {
+    // K+B vs K+B with opposite color bishops — NOT insufficient material
+    // White bishop on c1 (dark square), black bishop on c8 (light square)
+    Position pos;
+    position_from_fen(&pos, "2b1k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
+    GameStatus s = get_status(&pos);
+    ASSERT(s != STATUS_DRAW_INSUFFICIENT);
+}
+
+void test_status_sufficient_two_knights(void) {
+    // K+N+N vs K — NOT insufficient material (mate is possible, just not forceable)
+    Position pos;
+    position_from_fen(&pos, "4k3/8/8/8/8/8/8/1N2K1N1 w - - 0 1");
+    GameStatus s = get_status(&pos);
+    ASSERT(s != STATUS_DRAW_INSUFFICIENT);
+}
+
 void test_rules_suite(void) {
     RUN_SUITE(test_status_normal);
     RUN_SUITE(test_status_check);
@@ -44,4 +61,6 @@ void test_rules_suite(void) {
     RUN_SUITE(test_status_stalemate);
     RUN_SUITE(test_status_draw_insufficient);
     RUN_SUITE(test_status_draw_50_move);
+    RUN_SUITE(test_status_sufficient_opposite_bishops);
+    RUN_SUITE(test_status_sufficient_two_knights);
 }

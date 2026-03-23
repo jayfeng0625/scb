@@ -11,7 +11,7 @@ A zero-malloc C23 chess game evaluator.
 - **Zero allocation** -- all buffers on the stack, no malloc
 - **Pseudo-legal + filter** -- generate candidate moves, then discard those leaving king in check
 - **Layered library** -- bitboard < position < movegen < notation < rules < render
-- **Simplicity** -- minimal code, minimal comments, clear names
+- **Simplicity** -- clear names, short functions, few comments
 
 ## Build
 

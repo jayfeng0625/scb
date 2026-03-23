@@ -33,7 +33,7 @@ enum {
 };
 
 #define FEN_MAX     128
-#define SAN_MAX     8
+#define SAN_MAX     12
 #define MOVES_MAX   256
 #define RENDER_MAX  2048
 

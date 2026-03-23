@@ -102,6 +102,19 @@ void test_scholars_mate(void) {
     ASSERT_EQ(get_status(&pos), STATUS_CHECKMATE);
 }
 
+void test_en_passant_discovered_check(void) {
+    // White king on a5, white pawn on d5, black pawn on c5 (just double-pushed),
+    // black rook on h5. En passant dxc6 would remove the c5 pawn, exposing
+    // the white king to the rook on h5 via rank 5. Move must be illegal.
+    Position pos;
+    position_from_fen(&pos, "4k3/8/8/K1pP3r/8/8/8/8 w - c6 0 2");
+    Move moves[MOVES_MAX];
+    int count = generate_legal_moves(&pos, moves);
+    for (int i = 0; i < count; i++) {
+        ASSERT(!moves[i].en_passant);
+    }
+}
+
 void test_movegen_suite(void) {
     RUN_SUITE(test_attacked_initial);
     RUN_SUITE(test_attacked_by_knight);
@@ -112,5 +125,6 @@ void test_movegen_suite(void) {
     RUN_SUITE(test_legal_moves_en_passant);
     RUN_SUITE(test_legal_moves_castling);
     RUN_SUITE(test_legal_moves_in_check);
+    RUN_SUITE(test_en_passant_discovered_check);
     RUN_SUITE(test_scholars_mate);
 }

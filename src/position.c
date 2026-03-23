@@ -38,10 +38,12 @@ bool position_from_fen(Position *pos, const char *fen) {
 
     while (*p && *p != ' ') {
         if (*p == '/') {
+            if (f != 8) return false;
             r--;
             f = 0;
         } else if (*p >= '1' && *p <= '8') {
             f += *p - '0';
+            if (f > 8) return false;
         } else {
             int color = isupper(*p) ? WHITE : BLACK;
             int piece;
@@ -54,12 +56,14 @@ bool position_from_fen(Position *pos, const char *fen) {
                 case 'k': piece = KING; break;
                 default: return false;
             }
-            if (r < 0 || r > 7 || f < 0 || f > 7) return false;
+            if (r < 0 || r > 7 || f > 7) return false;
             pos->pieces[color][piece] |= bit(square(r, f));
             f++;
         }
         p++;
     }
+
+    if (r != 0 || f != 8) return false;
 
     if (popcount(pos->pieces[WHITE][KING]) != 1) return false;
     if (popcount(pos->pieces[BLACK][KING]) != 1) return false;

@@ -165,11 +165,26 @@ void test_fen_illegal_check(void) {
     ASSERT(!position_from_fen(&pos, "4k3/8/8/8/4R3/8/8/4K3 w - - 0 1"));
 }
 
+void test_fen_rank_validation(void) {
+    Position pos;
+    // rank with only 7 squares (missing h8 piece)
+    ASSERT(!position_from_fen(&pos, "rnbqkbn/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
+    // rank with 9 squares (too many)
+    ASSERT(!position_from_fen(&pos, "rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
+    // empty rank claiming 9 squares
+    ASSERT(!position_from_fen(&pos, "rnbqkbnr/pppppppp/9/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
+    // rank with too many pieces and digits
+    ASSERT(!position_from_fen(&pos, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R1N1B1Q1K1 w KQkq - 0 1"));
+    // only 6 ranks instead of 8
+    ASSERT(!position_from_fen(&pos, "rnbqkbnr/pppppppp/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
+}
+
 void test_position_suite(void) {
     RUN_SUITE(test_fen_starting);
     RUN_SUITE(test_fen_midgame);
     RUN_SUITE(test_fen_no_castling);
     RUN_SUITE(test_fen_invalid);
+    RUN_SUITE(test_fen_rank_validation);
     RUN_SUITE(test_position_init);
     RUN_SUITE(test_fen_roundtrip);
     RUN_SUITE(test_make_move_simple_pawn);
