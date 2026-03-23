@@ -1,6 +1,6 @@
 # scb — Design Specification
 
-A stateless, pure C chess game evaluator built on bitboards. Exposes a CLI that takes FEN + SAN in, produces FEN + rendered board out. No built-in AI, no search, no history — scb does one thing well and leaves the rest to its consumers.
+A stateless, pure C chess game evaluator built on bitboards. Exposes a CLI that takes FEN + LAN in, produces FEN + rendered board out. No built-in AI, no search, no history — scb does one thing well and leaves the rest to its consumers.
 
 ## Decision Drivers
 
@@ -12,7 +12,7 @@ These choices were made during brainstorming and shape every aspect of the desig
 
 **Stateless CLI architecture** — scb is a pure function: FEN in, FEN out. It validates a single move against a single position, returns the result, and forgets. Game history, turn order, session state, and intelligence are the caller's responsibility. No session, no cleanup, no global state.
 
-**FEN + SAN as interchange** — FEN is the universal standard for board state. SAN is the universal standard for moves. Every chess tool speaks both. Human-readable and agent-parseable.
+**FEN + LAN** — FEN is the universal standard for board state. LAN (Long Algebraic Notation) encodes moves as source-destination squares (e.g. `e2e4`, `g1f3`). LAN is unambiguous without requiring the position — simpler to parse, format, and validate than SAN.
 
 **No malloc** — chess is a finite, bounded problem with a very large but limited state space; while practical limits exist on moves, positions, and notation length, exact maximums depend on definitions and edge cases. The key insight is that every buffer has a conservative known ceiling. The library calls zero `malloc` — all buffers are caller-owned stack arrays. No leak paths, no ownership questions.
 
@@ -50,7 +50,7 @@ src/
   bitboard.c       — bit manipulation, square/coordinate conversion
   position.c       — FEN parse/serialize, init, make_move, piece_at
   movegen.c        — legal move generation, attack tables, is_square_attacked
-  notation.c       — SAN parse/format, move disambiguation
+  notation.c       — LAN parse/format
   rules.c          — check, checkmate, stalemate, draw detection
   render.c         — ASCII board rendering with info panel
 
@@ -100,7 +100,7 @@ typedef struct {
 
 ```c
 #define FEN_MAX      128
-#define SAN_MAX      12
+#define LAN_MAX      6
 #define MOVES_MAX    256
 #define RENDER_MAX   2048
 ```
@@ -118,10 +118,10 @@ int  generate_legal_moves(const Position *pos, Move *moves);
 bool make_move(Position *pos, const Move *move);  // returns false if move is illegal (defensive check)
 
 // notation
-bool parse_san(const Position *pos, const char *san, Move *out);
-int  format_san(const Position *pos, const Move *move, char *buf, int bufsize);
+bool parse_lan(const Position *pos, const char *lan, Move *out);
+int  format_lan(const Move *move, char *buf, int bufsize);
 
-// All formatting functions (position_to_fen, format_san, render_board) return
+// All formatting functions (position_to_fen, format_lan, render_board) return
 // bytes written excluding null terminator, or -1 on truncation.
 
 // rules
@@ -206,17 +206,17 @@ History-dependent detection (consumer's responsibility):
 - **Threefold repetition** — requires position history across moves. The consumer tracks FEN strings or position hashes and claims the draw when appropriate.
 - **Move history / PGN** — scb returns the resulting FEN after each move. The consumer accumulates these into a game record if needed.
 
-## SAN Parsing & Formatting
+## LAN Parsing & Formatting
 
-**Parsing** leans on the legal move list rather than implementing a full grammar parser. Extract piece type and target square from the SAN string, match against generated legal moves. Exactly one match = valid. Zero or multiple = error.
+**Parsing** decodes the source and destination squares from a 4–5 character string (`e2e4`, `e7e8q`), then matches against the legal move list. No disambiguation or piece-type extraction needed — LAN is inherently unambiguous.
 
-**Formatting** uses the position to determine disambiguation (file, rank, or both) and appends `+` or `#` for check/checkmate.
+**Formatting** writes source square + destination square + optional promotion suffix. Position-independent — `format_lan` does not need the `Position`.
 
 ## CLI Interface
 
 ```
 ./chess new-game
-./chess validate --fen <FEN> --move <SAN>
+./chess validate --fen <FEN> --move <LAN>
 ./chess legal-moves --fen <FEN>
 ./chess render --fen <FEN>
 ```
@@ -241,7 +241,7 @@ status: normal
 ```
 fen: <new FEN after move>
 status: normal|check|checkmate|stalemate|draw_50_move|draw_insufficient
-move: <canonical SAN>
+move: <LAN>
 
 <board>
 ```
@@ -253,7 +253,7 @@ error: invalid move '<move>'
 
 **`legal-moves` output:**
 ```
-moves: e3 e4 d3 d4 Nf3 Nc3 ...
+moves: e2e3 e2e4 d2d3 d2d4 g1f3 b1c3 ...
 count: 20
 ```
 

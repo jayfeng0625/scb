@@ -7,7 +7,7 @@ A zero-malloc C23 chess game evaluator.
 - **C23 / stdbit.h** -- modern C with portable bit intrinsics, fallback to builtins
 - **Bitboards** -- 64-bit integers for piece sets; fast attack generation
 - **Stateless CLI** -- every call takes a FEN and returns a FEN; no server, no sessions
-- **FEN + SAN** -- standard chess formats for position and move notation
+- **FEN + LAN** -- standard chess formats for position and move notation; LAN is unambiguous without needing the position
 - **Zero allocation** -- all buffers on the stack, no malloc
 - **Pseudo-legal + filter** -- generate candidate moves, then discard those leaving king in check
 - **Layered library** -- bitboard < position < movegen < notation < rules < render
@@ -38,10 +38,10 @@ status: normal
 ```sh
 $ ./build/chess validate \
     --fen "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" \
-    --move "e4"
+    --move "e2e4"
 fen: rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
 status: normal
-move: e4
+move: e2e4
 ```
 
 ### List legal moves
@@ -49,7 +49,7 @@ move: e4
 ```sh
 $ ./build/chess legal-moves \
     --fen "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-moves: a3 a4 b3 b4 c3 c4 d3 d4 e3 e4 f3 f4 g3 g4 h3 h4 Na3 Nc3 Nf3 Nh3
+moves: a2a3 a2a4 b2b3 b2b4 c2c3 c2c4 d2d3 d2d4 e2e3 e2e4 f2f3 f2f4 g2g3 g2g4 h2h3 h2h4 b1a3 b1c3 g1f3 g1h3
 count: 20
 ```
 
@@ -69,7 +69,7 @@ include/chess.h     Public API -- types, constants, function declarations
 src/bitboard.c      Attack table init, sliding piece ray attacks
 src/position.c      FEN parsing/serialization, make_move, piece_at/color_at
 src/movegen.c       is_square_attacked, generate_legal_moves
-src/notation.c      SAN parsing (parse_san) and formatting (format_san)
+src/notation.c      LAN parsing (parse_lan) and formatting (format_lan)
 src/rules.c         Game status detection (checkmate, stalemate, draws)
 src/render.c        Board rendering, status_name
 cli/main.c          CLI entry point with four subcommands
