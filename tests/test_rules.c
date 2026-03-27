@@ -37,6 +37,16 @@ void test_status_draw_50_move(void) {
     ASSERT_EQ(get_status(&pos), STATUS_DRAW_50_MOVE);
 }
 
+void test_promotion_checkmate(void) {
+    // k7/2P5/1K6 — c7c8q is checkmate (queen covers c8-a8, king covers a7)
+    Position pos;
+    position_from_fen(&pos, "k7/2P5/1K6/8/8/8/8/8 w - - 0 1");
+    Move m = { .from = C7, .to = C8, .piece = PAWN, .captured = PIECE_NONE,
+               .promotion = QUEEN, .castling = MOVE_CASTLE_NONE, .en_passant = false };
+    ASSERT(make_move(&pos, &m));
+    ASSERT_EQ(get_status(&pos), STATUS_CHECKMATE);
+}
+
 void test_status_sufficient_opposite_bishops(void) {
     // K+B vs K+B with opposite color bishops — NOT insufficient material
     // White bishop on c1 (dark square), black bishop on c8 (light square)
@@ -44,6 +54,13 @@ void test_status_sufficient_opposite_bishops(void) {
     position_from_fen(&pos, "2b1k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
     GameStatus s = get_status(&pos);
     ASSERT(s != STATUS_DRAW_INSUFFICIENT);
+}
+
+void test_status_draw_same_color_bishops(void) {
+    // K+B vs K+B same-color squares (both dark) — insufficient material
+    Position pos;
+    position_from_fen(&pos, "4k3/8/8/8/8/b7/8/2B1K3 w - - 0 1");
+    ASSERT_EQ(get_status(&pos), STATUS_DRAW_INSUFFICIENT);
 }
 
 void test_status_sufficient_two_knights(void) {
@@ -61,6 +78,8 @@ void test_rules_suite(void) {
     RUN_SUITE(test_status_stalemate);
     RUN_SUITE(test_status_draw_insufficient);
     RUN_SUITE(test_status_draw_50_move);
+    RUN_SUITE(test_promotion_checkmate);
     RUN_SUITE(test_status_sufficient_opposite_bishops);
+    RUN_SUITE(test_status_draw_same_color_bishops);
     RUN_SUITE(test_status_sufficient_two_knights);
 }

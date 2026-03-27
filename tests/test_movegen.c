@@ -102,6 +102,69 @@ void test_scholars_mate(void) {
     ASSERT_EQ(get_status(&pos), STATUS_CHECKMATE);
 }
 
+void test_en_passant_two_pawns(void) {
+    // Pawns on d5 and f5 can both capture en passant on e6
+    Position pos;
+    position_from_fen(&pos, "4k3/8/8/3PpP2/8/8/8/4K3 w - e6 0 1");
+    Move moves[MOVES_MAX];
+    int count = generate_legal_moves(&pos, moves);
+    int ep_count = 0;
+    for (int i = 0; i < count; i++)
+        if (moves[i].en_passant) ep_count++;
+    ASSERT_EQ(ep_count, 2);
+}
+
+void test_castling_destination_attacked(void) {
+    // Bishop h2 attacks g1 but not f1 or e1
+    // Kingside castle illegal (king lands on attacked g1), queenside still OK
+    Position pos;
+    position_from_fen(&pos, "r3k2r/8/8/8/8/8/7b/R3K2R w KQkq - 0 1");
+    Move moves[MOVES_MAX];
+    int count = generate_legal_moves(&pos, moves);
+    bool found_kingside = false, found_queenside = false;
+    for (int i = 0; i < count; i++) {
+        if (moves[i].castling == MOVE_CASTLE_KINGSIDE) found_kingside = true;
+        if (moves[i].castling == MOVE_CASTLE_QUEENSIDE) found_queenside = true;
+    }
+    ASSERT(!found_kingside);
+    ASSERT(found_queenside);
+}
+
+void test_pinned_piece(void) {
+    // Knight e4 pinned to king e1 by rook e8 — no knight moves possible
+    Position pos;
+    position_from_fen(&pos, "4r3/8/8/8/4N3/8/8/4K2k w - - 0 1");
+    Move moves[MOVES_MAX];
+    int count = generate_legal_moves(&pos, moves);
+    for (int i = 0; i < count; i++)
+        ASSERT(moves[i].piece != KNIGHT);
+
+    // Rook e4 pinned along e-file — can slide along file, not off it
+    position_from_fen(&pos, "4r3/8/8/8/4R3/8/8/4K2k w - - 0 1");
+    count = generate_legal_moves(&pos, moves);
+    bool rook_moves = false;
+    for (int i = 0; i < count; i++) {
+        if (moves[i].piece == ROOK) {
+            rook_moves = true;
+            ASSERT_EQ(file_of(moves[i].to), file_of(E4));
+        }
+    }
+    ASSERT(rook_moves);
+}
+
+void test_double_check(void) {
+    // King e1 in double check from rook e7 + bishop c3
+    // Queen d1 could capture c3 or block e2, but neither resolves both
+    Position pos;
+    position_from_fen(&pos, "4k3/4r3/8/8/8/2b5/8/3QK3 w - - 0 1");
+    ASSERT_EQ(get_status(&pos), STATUS_CHECK);
+    Move moves[MOVES_MAX];
+    int count = generate_legal_moves(&pos, moves);
+    ASSERT(count > 0);
+    for (int i = 0; i < count; i++)
+        ASSERT_EQ(moves[i].piece, KING);
+}
+
 void test_en_passant_discovered_check(void) {
     // White king on a5, white pawn on d5, black pawn on c5 (just double-pushed),
     // black rook on h5. En passant dxc6 would remove the c5 pawn, exposing
@@ -125,6 +188,10 @@ void test_movegen_suite(void) {
     RUN_SUITE(test_legal_moves_en_passant);
     RUN_SUITE(test_legal_moves_castling);
     RUN_SUITE(test_legal_moves_in_check);
+    RUN_SUITE(test_en_passant_two_pawns);
+    RUN_SUITE(test_castling_destination_attacked);
+    RUN_SUITE(test_pinned_piece);
+    RUN_SUITE(test_double_check);
     RUN_SUITE(test_en_passant_discovered_check);
     RUN_SUITE(test_scholars_mate);
 }

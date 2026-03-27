@@ -160,6 +160,29 @@ void test_make_move_black_pawn(void) {
     ASSERT_EQ(pos.fullmove, 2);
 }
 
+void test_castling_revoked_by_rook_capture(void) {
+    // White bishop captures black's h8 rook → black loses kingside castling
+    Position pos;
+    position_from_fen(&pos, "r3k2r/ppppppBp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+    Move m = { .from = G7, .to = H8, .piece = BISHOP, .captured = ROOK,
+               .promotion = PIECE_NONE, .castling = MOVE_CASTLE_NONE, .en_passant = false };
+    ASSERT(make_move(&pos, &m));
+    ASSERT(!(pos.castling & CASTLE_BK));   // black kingside revoked
+    ASSERT(pos.castling & CASTLE_BQ);      // black queenside intact
+    ASSERT(pos.castling & CASTLE_WK);      // white unaffected
+    ASSERT(pos.castling & CASTLE_WQ);
+
+    // Black bishop captures white's a1 rook → white loses queenside castling
+    position_from_fen(&pos, "r3k2r/pppppppp/8/8/8/8/PPPPPPbP/R3K2R b KQkq - 0 1");
+    Move m2 = { .from = G2, .to = A1, .piece = BISHOP, .captured = ROOK,
+                .promotion = PIECE_NONE, .castling = MOVE_CASTLE_NONE, .en_passant = false };
+    ASSERT(make_move(&pos, &m2));
+    ASSERT(!(pos.castling & CASTLE_WQ));   // white queenside revoked
+    ASSERT(pos.castling & CASTLE_WK);      // white kingside intact
+    ASSERT(pos.castling & CASTLE_BK);      // black unaffected
+    ASSERT(pos.castling & CASTLE_BQ);
+}
+
 void test_fen_illegal_check(void) {
     Position pos;
     ASSERT(!position_from_fen(&pos, "4k3/8/8/8/4R3/8/8/4K3 w - - 0 1"));
@@ -196,4 +219,5 @@ void test_position_suite(void) {
     RUN_SUITE(test_make_move_en_passant);
     RUN_SUITE(test_make_move_promotion);
     RUN_SUITE(test_fen_illegal_check);
+    RUN_SUITE(test_castling_revoked_by_rook_capture);
 }
